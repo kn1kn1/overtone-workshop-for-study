@@ -1,4 +1,6 @@
 (ns overtone-workshop.core)
 
-(println "hello")
-
+(use 'overtone.live)
+(use 'overtone-workshop.letsgo)
+(play-all (metronome 128))
+(stop)
