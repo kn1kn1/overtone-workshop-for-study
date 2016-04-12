@@ -55,6 +55,17 @@
 (def *arp (atom {:amp 0.0 :filt 3 :decay 0.4 :coef 0.1}))
 (def *bass (atom {:amp 0 :cutoff 0.0 :rq 0.5}))
 
+(comment
+  (defn part2 []
+  (dosync
+    ;;(reset! *beats beats)
+    ;;(untztrument *arp-low *controls)
+    (swap! *arp assoc :amp 0.5 :filt 6 :decay 0.4 :coef 0.1))))
+(comment
+  (ks (note :F3) 0.5 2 0.4 0.1 6)
+  (ks (note :G3) 0.5 2 0.4 0.1 6)
+  (ks (note :G#3) 0.5 2 0.4 0.1 6))
+
 (def play-arp (partial play-with-controls #'ks *arp))
 (def play-arp-low (partial play-with-controls #'ks *arp-low))
 
