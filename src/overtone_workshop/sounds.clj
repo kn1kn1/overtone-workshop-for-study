@@ -10,6 +10,8 @@
 ;;  signal           filter        amplitude
 
 
+(volume 32/128)
+
 ;; signals (oscilators)
 (comment
   (scope 0)
@@ -53,6 +55,7 @@
   (ctl s :note (note :B#4))
   (ctl s :note (note :A4))
   (ctl s :note (note :C3))
+  (kill s)
   (stop))
 
 ;; filters
@@ -62,6 +65,10 @@
   (demo 15 (pan2 (mix (bpf (saw [99 100 101]) (mouse-x 40 5000 EXP) (mouse-y 0.01 1 LIN)))))
   (demo 15 (pan2 (mix (rlpf (saw [99 100 101]) (mouse-x 40 5000 EXP) (mouse-y 0.01 1 LIN)))))
   (stop))
+
+(odoc rlpf)
+(odoc bpf)
+(odoc mouse-y)
 
 (defcgen wobble [src wobble-factor]
   (:ar
@@ -76,13 +83,23 @@
   (demo 3 (wobble (mix (saw [99 100 101])) 3)))
 
 ;; detuning
+; (definst multi-osc [note 60 osc2-semi 0 amp 0.3]
+;   (let [freq  (midicps note)
+;         osc1  (saw freq)
+;         freq2 (midicps (+ note osc2-semi))
+;         osc2  (saw freq2)
+;         snd   (+ osc1 osc2)]
+;     (pan2 (* amp snd))))
 (definst multi-osc [note 60 osc2-semi 0 amp 0.3]
   (let [freq  (midicps note)
         osc1  (saw freq)
         freq2 (midicps (+ note osc2-semi))
         osc2  (saw freq2)
-        snd   (+ osc1 osc2)]
+        snd   (mix (saw [freq freq2]))]
     (pan2 (* amp snd))))
+(odoc mix)
+(odoc sum)
+(odoc +)
 
 (- (note :C5) (note :C4))
 
@@ -133,6 +150,7 @@
     (repeat saws detune)))
 
 (detune 3 0.2)
+(repeat 3 0.2)
 
 (definst my-lead [note 60 semi 0 attack 0.001 sustain 0.5 release 0.2 amp 0.4 delay 0.45 saws 3 det 0.2]
   (let [note  (+ note semi)
@@ -147,4 +165,3 @@
   (play-chord (chord :F4 :major) my-lead)
   (play-chord (chord :A3 :minor) my-lead)
   (play-chord (chord :G3 :major) my-lead))
-
