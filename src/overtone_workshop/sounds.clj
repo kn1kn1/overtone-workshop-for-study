@@ -152,12 +152,50 @@
 (detune 3 0.2)
 (repeat 3 0.2)
 
-(definst my-lead [note 60 semi 0 attack 0.001 sustain 0.5 release 0.2 amp 0.4 delay 0.45 saws 3 det 0.2]
+(definst my-lead [note 60 semi 0 attack 0.001 sustain 0.5 release 0.2 amp 0.4]
   (let [note  (+ note semi)
         freqs (map #(midicps (+ note %)) (detune 3 0.2))
         src   (pan2 (mix (saw freqs)))]
     (* amp src
        (env-gen (env-lin attack sustain release)))))
+
+(definst wah-lead [note 60 semi 0 attack 0.001 sustain 0.5 release 0.2 amp 1.0 cutoff 2200]
+  (let [note  (+ note semi)
+        env   (env-gen (env-lin attack sustain release))
+        freq  (* 440.0 (pow 2.0 (/ (- note 69.0) 12.0)))
+        freqs (map #(midicps (+ note %)) (detune 3 0.2))
+        dur   (+ attack sustain release)
+        level (+ (* freq 0.25)
+                 (env-gen (adsr 0.5 0.3 1 0.5) (line:kr 1.0 0.0 (/ dur 2)) :level-scale cutoff))
+        src   (mix (saw freqs))]
+    (pan2 (* (bpf src level 0.6) env amp))))
+;;     (-> src
+;;         (bpf level 0.6)
+;;         (* env amp)
+;;         pan2)))
+
+(definst da-funk [note 60 dur 1.0 amp 1.0 cutoff 2200]
+  (let [
+        freq  (* 440.0 (pow 2.0 (/ (- note 69.0) 12.0)))
+        env   (env-gen (adsr 0.3 0.7 0.5 0.3) (line:kr 1.0 0.0 dur) :action FREE)
+        level (+ (* freq 0.25)
+                 (env-gen (adsr 0.5 0.3 1 0.5) (line:kr 1.0 0.0 (/ dur 2)) :level-scale cutoff))
+        osc   (mix [(saw freq)
+                    (saw (* freq 0.7491535384383409))])]
+    (-> osc
+        (bpf level 0.6)
+        (* env amp)
+        pan2)))
+
+(comment
+  (da-funk :note 60)
+  (my-lead :note 60)
+  (wah-lead :note 60)
+  (midi->hz 60))
+
+
+(map #(midicps (+ 60 %)) (detune 3 0.2))
+(map #(+ 60 %) (detune 3 0.2))
 
 (comment
   (my-lead :note 48)
@@ -165,3 +203,16 @@
   (play-chord (chord :F4 :major) my-lead)
   (play-chord (chord :A3 :minor) my-lead)
   (play-chord (chord :G3 :major) my-lead))
+
+(comment
+  (wah-lead :note 48)
+  (play-chord (chord :C4 :major) wah-lead)
+  (play-chord (chord :F4 :major) wah-lead)
+  (play-chord (chord :A3 :minor) wah-lead)
+  (play-chord (chord :G3 :major) wah-lead))
+
+(comment
+  (play-chord (chord :C3 :major) my-lead))
+
+(comment
+  (play-chord (chord :C3 :major) da-funk))
